@@ -1,4 +1,4 @@
-import Notiflix from 'Notiflix';
+import Notiflix from 'notiflix';
 
 const form = document.querySelector('.form');
 const btnSub = form.children[3];

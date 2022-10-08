@@ -7,6 +7,9 @@ const dataHours = document.querySelector('[data-hours]');
 const dataMinutes = document.querySelector('[data-minutes]');
 const dataSeconds = document.querySelector('[data-seconds]');
 const textLabel = document.querySelectorAll('.label');
+textLabel.forEach(
+  element => (element.textContent = element.textContent.toUpperCase())
+);
 
 btnStartTimer.setAttribute('disabled', true);
 
@@ -30,6 +33,11 @@ function convertMs(ms) {
   return { days, hours, minutes, seconds };
 }
 
+btnStartTimer.addEventListener('click', onClickStartTimer);
+
+let userTime = null;
+let newTime = null;
+
 const options = {
   enableTime: true,
   time_24hr: true,
@@ -39,29 +47,33 @@ const options = {
   altFormat: 'F j, Y',
   dateFormat: 'Y-m-d',
   onClose(selectedDates) {
-    btnStartTimer.addEventListener('click', onClickStartTimer);
+    userTime = selectedDates[0];
+
     onInput(selectedDates);
-    function onClickStartTimer(ev) {
-      btnStartTimer.setAttribute('disabled', true);
-      const intervalId = setInterval(() => {
-        if (!btnStartTimer.hasAttribute('disabled')) {
-          clearInterval(intervalId);
-          return;
-        }
-        const arrDate = convertMs(comparisonDateNum(selectedDates));
-        const dateUser = name(arrDate);
-        console.log(arrDate);
-        setNewDate(dateUser);
-      }, 1000);
-    }
   },
 };
 
+function onClickStartTimer() {
+  btnStartTimer.setAttribute('disabled', true);
+  const intervalId = setInterval(() => {
+    newTime = new Date();
+
+    if (!btnStartTimer.hasAttribute('disabled') || userTime <= newTime) {
+      clearInterval(intervalId);
+      return;
+    }
+    const arrDate = convertMs(comparisonDateNum(userTime, newTime));
+    const dateUser = name(arrDate);
+
+    setNewDate(dateUser);
+  }, 1000);
+}
+
 const fp = flatpickr('#datetime-picker', { ...options });
 
-function onInput(e) {
+function onInput() {
   btnStartTimer.setAttribute('disabled', true);
-  if (comparisonDateNum(e) > 0) {
+  if (userTime > newTime) {
     btnStartTimer.removeAttribute('disabled');
     return;
   } else {
@@ -85,9 +97,6 @@ function setNewDate(dateUser) {
   dataSeconds.textContent = dateUser.seconds;
 }
 
-function comparisonDateNum(valueInput) {
-  const newDate = new Date();
-  const selDate = valueInput[0];
-
-  return selDate - newDate;
+function comparisonDateNum(andTime, now) {
+  return andTime - now;
 }
